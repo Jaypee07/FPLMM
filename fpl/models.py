@@ -40,3 +40,66 @@ class Gameweek(models.Model):
 
     def __str__(self):
         return f"Gameweek {self.number}"
+
+
+class WeeklyScore(models.Model):
+    class Chip(models.TextChoices):
+        BENCH_BOOST = "bboost", "Bench Boost"
+        TRIPLE_CAPTAIN = "3xc", "Triple Captain"
+        WILDCARD = "wildcard", "Wildcard"
+        FREE_HIT = "freehit", "Free Hit"
+
+    league_member = models.ForeignKey(
+        "leagues.LeagueMember",
+        on_delete=models.CASCADE,
+        related_name="weekly_scores",
+    )
+
+    gameweek = models.ForeignKey(
+        Gameweek,
+        on_delete=models.CASCADE,
+        related_name="weekly_scores",
+    )
+
+    raw_points = models.IntegerField(
+        help_text="Official FPL points for this gameweek, chip effects included."
+    )
+
+    chip_used = models.CharField(
+        max_length=10,
+        choices=Chip.choices,
+        null=True,
+        blank=True,
+    )
+
+    adjusted_points = models.IntegerField(
+        help_text="raw_points with bench boost / triple captain bonus removed. "
+                   "Equal to raw_points if no scoring chip was used."
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["league_member", "gameweek"],
+                name="unique_weeklyscore_per_member_per_gw",
+            )
+        ]
+        ordering = ["gameweek", "league_member"]
+        verbose_name = "Weekly Score"
+        verbose_name_plural = "Weekly Scores"
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.league_member} - GW{self.gameweek.number}: {self.raw_points}"
+
+    @property
+    def score_for_standing(self):
+        if self.league_member.league.include_chip_points:
+            return self.raw_points
+        return self.adjusted_points
