@@ -103,3 +103,49 @@ class WeeklyScore(models.Model):
         if self.league_member.league.include_chip_points:
             return self.raw_points
         return self.adjusted_points
+
+
+# fpl/models.py
+
+class Standing(models.Model):
+    league_member = models.ForeignKey(
+        "leagues.LeagueMember",
+        on_delete=models.CASCADE,
+        related_name="standings",
+    )
+
+    gameweek = models.ForeignKey(
+        Gameweek,
+        on_delete=models.CASCADE,
+        related_name="standings",
+    )
+
+    total_points = models.IntegerField(
+        help_text="Cumulative points for this member from the league's "
+                   "start_gameweek through this gameweek."
+    )
+
+    rank = models.PositiveSmallIntegerField(
+        help_text="Member's rank within the league as of this gameweek."
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["league_member", "gameweek"],
+                name="unique_standing_per_member_per_gw",
+            )
+        ]
+        ordering = ["gameweek", "rank"]
+        verbose_name = "Standing"
+        verbose_name_plural = "Standings"
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.league_member} - GW{self.gameweek.number}: #{self.rank} ({self.total_points} pts)"
