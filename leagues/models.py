@@ -90,3 +90,31 @@ class League(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class LeagueMember(models.Model):
+    league = models.ForeignKey(
+        League,
+        on_delete=models.PROTECT,
+        related_name="members",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="league_memberships",
+    )
+
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["league", "user"],
+                name="unique_league_member",
+            )
+        ]
+        ordering = ["joined_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.league.name}"
