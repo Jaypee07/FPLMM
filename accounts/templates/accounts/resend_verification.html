@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Resend verification — FPLMM</title></head>
+<body>
+    <h1>Resend verification email</h1>
+    <p>If your first email didn't arrive, check your Spam or Junk folder before requesting a new one — new senders often land there until you mark them safe.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Resend</button>
+    </form>
+</body>
+</html>

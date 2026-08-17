@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register — FPLMM</title>
+</head>
+<body>
+    <h1>Create your FPLMM account</h1>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <p>
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {{ form.username.errors }}
+        </p>
+
+        <p>
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {{ form.email.errors }}
+        </p>
+
+        <p>
+            {{ form.fpl_team_id.label_tag }}
+            {{ form.fpl_team_id }}
+            <span id="fpl-check-result"></span>
+            {{ form.fpl_team_id.errors }}
+        </p>
+
+        <details>
+            <summary>Don't know your FPL Team ID?</summary>
+            <ol>
+                <li>Go to <a href="https://fantasy.premierleague.com" target="_blank">fantasy.premierleague.com</a> and log in.</li>
+                <li>Click <strong>"Leagues & Cups"</strong>.</li>
+                <li>Open any league you're a member of.</li>
+                <li>Click on your own name in that league's standings.</li>
+                <li>Look at the URL — the number after <code>/entry/</code> is your FPL Team ID.</li>
+            </ol>
+        </details>
+
+        <p>
+            {{ form.password1.label_tag }}
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+        </p>
+
+        <p>
+            {{ form.password2.label_tag }}
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+        </p>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        const fplInput = document.getElementById("id_fpl_team_id");
+        const resultSpan = document.getElementById("fpl-check-result");
+        let debounceTimer;
+
+        fplInput.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            const teamId = fplInput.value.trim();
+
+            if (!teamId) {
+                resultSpan.textContent = "";
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`/accounts/validate-fpl-id/?fpl_team_id=${encodeURIComponent(teamId)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.valid) {
+                            resultSpan.textContent = `✓ Manager: ${data.name} (${data.team_name})`;
+                            resultSpan.style.color = "green";
+                        } else {
+                            resultSpan.textContent = "✗ FPL ID not found";
+                            resultSpan.style.color = "red";
+                        }
+                    })
+                    .catch(() => {
+                        resultSpan.textContent = "Could not verify right now";
+                        resultSpan.style.color = "orange";
+                    });
+            }, 500); // debounce so it doesn't fire on every keystroke
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login — FPLMM</title>
+</head>
+<body>
+    <h1>Log in to FPLMM</h1>
+
+    {% if form.non_field_errors %}
+        <div style="color: red;">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Log in</button>
+    </form>
+
+    <p><a href="{% url 'register' %}">Don't have an account? Register</a></p>
+    <p><a href="{% url 'resend-verification' %}">Didn't get a verification email?</a></p>
+</body>
+</html>
