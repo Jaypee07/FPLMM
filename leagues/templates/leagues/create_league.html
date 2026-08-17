@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Create League — FPLMM</title></head>
+<body>
+    <h1>Create a Mini League</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create League</button>
+    </form>
+
+    <script>
+        const totalGwInput = document.getElementById("id_total_gameweeks");
+        const chipCheckbox = document.getElementById("id_include_chip_points");
+        const chipLabel = chipCheckbox.closest("p");
+
+        function updateChipFieldState() {
+            const total = parseInt(totalGwInput.value, 10);
+            const eligible = total > 10;
+
+            chipCheckbox.disabled = !eligible;
+            if (!eligible) {
+                chipCheckbox.checked = false;
+            }
+
+            let note = chipLabel.querySelector(".chip-note");
+            if (!note) {
+                note = document.createElement("span");
+                note.className = "chip-note";
+                note.style.color = "#888";
+                note.style.fontSize = "0.85em";
+                chipLabel.appendChild(note);
+            }
+            note.textContent = eligible
+                ? ""
+                : " (only available for leagues longer than 10 gameweeks)";
+        }
+
+        totalGwInput.addEventListener("input", updateChipFieldState);
+        updateChipFieldState(); // run on load too
+    </script>
+</body>
+</html>

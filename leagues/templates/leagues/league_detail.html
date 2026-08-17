@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>{{ league.name }} — FPLMM</title></head>
+<body>
+    <h1>{{ league.name }}</h1>
+
+    {% if is_owner %}
+        <p><strong>Invite code:</strong> {{ league.code }} (share this with people to join)</p>
+    {% endif %}
+
+    <p>Gameweeks: {{ league.start_gameweek }} – {{ league.end_gameweek }}</p>
+    <p>Chip points included: {{ league.include_chip_points|yesno:"Yes,No" }}</p>
+
+    <h2>Members ({{ members|length }})</h2>
+    <ul>
+        {% for member in members %}
+            <li>
+                {{ member.user.username }}
+                {% if member.user_id == league.owner_id %}(Owner){% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
