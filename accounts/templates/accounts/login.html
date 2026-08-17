@@ -7,12 +7,6 @@
 <body>
     <h1>Log in to FPLMM</h1>
 
-    {% if form.non_field_errors %}
-        <div style="color: red;">
-            {{ form.non_field_errors }}
-        </div>
-    {% endif %}
-
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
