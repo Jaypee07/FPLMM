@@ -1,93 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Register — FPLMM</title>
-</head>
-<body>
-    <h1>Create your FPLMM account</h1>
+{% extends "base.html" %}
+{% block title %}Register — FPLMM{% endblock %}
 
-    <form method="post" novalidate>
-        {% csrf_token %}
-        {{ form.non_field_errors }}
+{% block content %}
+<div class="max-w-lg mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h1 class="font-display text-3xl font-bold text-ink mb-1">Create your account</h1>
+        <p class="text-ink/70 mb-6">Track your FPL leagues, your way.</p>
 
-        <p>
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            {{ form.username.errors }}
+        <form method="post" novalidate class="space-y-4">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div>
+                <label class="block text-sm font-semibold text-ink mb-1">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% for error in form.username.errors %}
+                    <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-ink mb-1">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% for error in form.email.errors %}
+                    <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-ink mb-1">{{ form.fpl_team_id.label }}</label>
+                {{ form.fpl_team_id }}
+                <p id="fpl-check-result" class="text-sm mt-1"></p>
+                {% for error in form.fpl_team_id.errors %}
+                    <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <details class="bg-lime-50 rounded-2xl px-4 py-3 text-sm text-ink/80">
+                <summary class="font-semibold text-ink cursor-pointer">Don't know your FPL Team ID?</summary>
+                <ol class="list-decimal list-inside mt-2 space-y-1">
+                    <li>Go to <a href="https://fantasy.premierleague.com" target="_blank" class="underline font-semibold">fantasy.premierleague.com</a> and log in.</li>
+                    <li>Click <strong>"Leagues & Cups"</strong>.</li>
+                    <li>Open any league you're a member of.</li>
+                    <li>Click on your own name in that league's standings.</li>
+                    <li>The number after <code class="bg-white px-1 rounded">/entry/</code> in the URL is your FPL Team ID.</li>
+                </ol>
+            </details>
+
+            <div>
+                <label class="block text-sm font-semibold text-ink mb-1">{{ form.password1.label }}</label>
+                {{ form.password1 }}
+                {% for error in form.password1.errors %}
+                    <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-ink mb-1">{{ form.password2.label }}</label>
+                {{ form.password2 }}
+                {% for error in form.password2.errors %}
+                    <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="w-full bg-ink text-white font-semibold py-3 rounded-full shadow-softer hover:shadow-soft transition mt-2">
+                Register
+            </button>
+        </form>
+
+        <p class="mt-6 text-sm text-ink/70">
+            <a href="{% url 'login' %}" class="text-ink font-semibold hover:underline">Already have an account? Log in</a>
         </p>
+    </div>
+</div>
 
-        <p>
-            {{ form.email.label_tag }}
-            {{ form.email }}
-            {{ form.email.errors }}
-        </p>
+<script>
+    const fplInput = document.getElementById("id_fpl_team_id");
+    const resultP = document.getElementById("fpl-check-result");
+    let debounceTimer;
 
-        <p>
-            {{ form.fpl_team_id.label_tag }}
-            {{ form.fpl_team_id }}
-            <span id="fpl-check-result"></span>
-            {{ form.fpl_team_id.errors }}
-        </p>
+    fplInput.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        const teamId = fplInput.value.trim();
 
-        <details>
-            <summary>Don't know your FPL Team ID?</summary>
-            <ol>
-                <li>Go to <a href="https://fantasy.premierleague.com" target="_blank">fantasy.premierleague.com</a> and log in.</li>
-                <li>Click <strong>"Leagues & Cups"</strong>.</li>
-                <li>Open any league you're a member of.</li>
-                <li>Click on your own name in that league's standings.</li>
-                <li>Look at the URL — the number after <code>/entry/</code> is your FPL Team ID.</li>
-            </ol>
-        </details>
+        if (!teamId) {
+            resultP.textContent = "";
+            return;
+        }
 
-        <p>
-            {{ form.password1.label_tag }}
-            {{ form.password1 }}
-            {{ form.password1.errors }}
-        </p>
-
-        <p>
-            {{ form.password2.label_tag }}
-            {{ form.password2 }}
-            {{ form.password2.errors }}
-        </p>
-
-        <button type="submit">Register</button>
-    </form>
-
-    <script>
-        const fplInput = document.getElementById("id_fpl_team_id");
-        const resultSpan = document.getElementById("fpl-check-result");
-        let debounceTimer;
-
-        fplInput.addEventListener("input", () => {
-            clearTimeout(debounceTimer);
-            const teamId = fplInput.value.trim();
-
-            if (!teamId) {
-                resultSpan.textContent = "";
-                return;
-            }
-
-            debounceTimer = setTimeout(() => {
-                fetch(`/accounts/validate-fpl-id/?fpl_team_id=${encodeURIComponent(teamId)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.valid) {
-                            resultSpan.textContent = `✓ Manager: ${data.name} (${data.team_name})`;
-                            resultSpan.style.color = "green";
-                        } else {
-                            resultSpan.textContent = "✗ FPL ID not found";
-                            resultSpan.style.color = "red";
-                        }
-                    })
-                    .catch(() => {
-                        resultSpan.textContent = "Could not verify right now";
-                        resultSpan.style.color = "orange";
-                    });
-            }, 500); // debounce so it doesn't fire on every keystroke
-        });
-    </script>
-</body>
-</html>
+        debounceTimer = setTimeout(() => {
+            fetch(`/accounts/validate-fpl-id/?fpl_team_id=${encodeURIComponent(teamId)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.valid) {
+                        resultP.textContent = `✓ Manager: ${data.name} (${data.team_name})`;
+                        resultP.className = "text-sm mt-1 text-lime-600 font-semibold";
+                    } else {
+                        resultP.textContent = "✗ FPL ID not found";
+                        resultP.className = "text-sm mt-1 text-red-500 font-semibold";
+                    }
+                })
+                .catch(() => {
+                    resultP.textContent = "Could not verify right now";
+                    resultP.className = "text-sm mt-1 text-yellow-600 font-semibold";
+                });
+        }, 500);
+    });
+</script>
+{% endblock %}

@@ -1,13 +1,11 @@
-from django.shortcuts import render
-
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.shortcuts import redirect, render
 from django.views import View
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView
+
+from fpl.models import Standing
 
 from .forms import JoinLeagueForm, LeagueCreateForm
 from .models import League, LeagueMember
@@ -62,15 +60,7 @@ class JoinLeagueView(LoginRequiredMixin, View):
         return redirect("league-detail", pk=league.pk)
 
     def _render(self, request, form):
-        from django.shortcuts import render
         return render(request, self.template_name, {"form": form})
-
-
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
-from django.views.generic import DetailView
-
-from .models import League
 
 
 class LeagueDetailView(LoginRequiredMixin, DetailView):
@@ -80,7 +70,27 @@ class LeagueDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["members"] = self.object.members.select_related("user").all()
-        context["is_owner"] = self.object.owner_id == self.request.user.id
-        context["is_member"] = self.object.members.filter(user=self.request.user).exists()
+        league = self.object
+
+        context["members"] = league.members.select_related("user").all()
+        context["is_owner"] = league.owner_id == self.request.user.id
+        context["is_member"] = league.members.filter(user=self.request.user).exists()
+
+        latest_standings = (
+            Standing.objects.filter(league_member__league=league)
+            .select_related("league_member__user", "gameweek")
+            .order_by("-gameweek__number")
+        )
+
+        latest_gameweek_number = latest_standings.first().gameweek.number if latest_standings.exists() else None
+
+        if latest_gameweek_number:
+            context["leaderboard"] = latest_standings.filter(
+                gameweek__number=latest_gameweek_number
+            ).order_by("rank")
+            context["leaderboard_gameweek"] = latest_gameweek_number
+        else:
+            context["leaderboard"] = None
+            context["leaderboard_gameweek"] = None
+
         return context

@@ -1,32 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>{{ league.name }} — FPLMM</title></head>
-<body>
-    <h1>{{ league.name }}</h1>
+{% extends "base.html" %}
+{% block title %}{{ league.name }} — FPLMM{% endblock %}
 
-    {% if is_owner %}
-        <p><strong>Invite code:</strong> {{ league.code }} (share this with people to join)</p>
-    {% endif %}
+{% block content %}
+<div class="mt-8 space-y-8">
 
-    <p>Gameweeks: {{ league.start_gameweek }} – {{ league.end_gameweek }}</p>
-    <p>Chip points included: {{ league.include_chip_points|yesno:"Yes,No" }}</p>
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h1 class="font-display text-3xl font-bold text-ink">{{ league.name }}</h1>
 
-    <h2>Members ({{ members|length }})</h2>
-    <ul>
-        {% for member in members %}
-            <li>
-                {{ member.user.username }}
-                {% if member.user_id == league.owner_id %}(Owner){% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+        {% if is_owner %}
+            <div class="mt-3 inline-flex items-center gap-2 bg-lime-50 border border-lime-200 rounded-full px-4 py-2">
+                <span class="text-ink/70 text-sm">Invite code</span>
+                <span class="font-display font-bold text-ink tracking-wide">{{ league.code }}</span>
+            </div>
+        {% endif %}
 
-    {% if messages %}
-        <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
+        <div class="flex flex-wrap gap-4 mt-4 text-sm text-ink/70">
+            <span>Gameweeks {{ league.start_gameweek }}–{{ league.end_gameweek }}</span>
+            <span>·</span>
+            <span>Chip points: {{ league.include_chip_points|yesno:"Included,Not included" }}</span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h2 class="font-display text-2xl font-bold text-ink mb-4">Leaderboard</h2>
+
+        {% if leaderboard %}
+            <p class="text-sm text-ink/60 mb-4">As of Gameweek {{ leaderboard_gameweek }}</p>
+            <div class="space-y-3">
+                {% for standing in leaderboard %}
+                    <div class="flex items-center justify-between rounded-2xl border border-divider px-5 py-4">
+                        <div class="flex items-center gap-4">
+                            <span class="font-display font-bold text-sm rounded-full w-10 h-10 flex items-center justify-center
+                                {% if standing.rank == 1 %}bg-ink text-white{% else %}bg-lime-50 text-ink{% endif %}">
+                                #{{ standing.rank }}
+                            </span>
+                            <div>
+                                <p class="font-semibold text-ink">{{ standing.league_member.user.fpl_manager_name|default:standing.league_member.user.username }}</p>
+                                <p class="text-sm text-ink/50">{{ standing.league_member.user.fpl_team_name|default:"—" }}</p>
+                            </div>
+                        </div>
+                        <span class="font-display font-bold text-lg text-ink">{{ standing.total_points }} pts</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-ink/60">No gameweeks have been processed for this league yet. Check back once the admin processes the current gameweek.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h2 class="font-display text-2xl font-bold text-ink mb-4">Members ({{ members|length }})</h2>
+        <ul class="space-y-2">
+            {% for member in members %}
+                <li class="flex items-center justify-between py-2 border-b border-divider last:border-0">
+                    <span class="text-ink font-medium">{{ member.user.fpl_manager_name|default:member.user.username }}</span>
+                    {% if member.user_id == league.owner_id %}
+                        <span class="text-xs font-semibold bg-lime-50 text-ink px-3 py-1 rounded-full">Owner</span>
+                    {% endif %}
+                </li>
             {% endfor %}
         </ul>
-    {% endif %}
-</body>
-</html>
+    </div>
+
+</div>
+{% endblock %}

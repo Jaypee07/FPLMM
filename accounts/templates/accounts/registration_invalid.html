@@ -1,8 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Invalid link — FPLMM</title></head>
-<body>
-    <h1>This verification link is invalid or has expired</h1>
-    <p><a href="{% url 'register' %}">Register again</a></p>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Invalid link — FPLMM{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-soft p-8 text-center">
+        <h1 class="font-display text-3xl font-bold text-ink mb-3">This link is invalid or has expired</h1>
+        <p class="text-ink/70 mb-6">No worries — you can register again or request a fresh link.</p>
+        <a href="{% url 'register' %}" class="inline-block bg-ink text-white font-semibold px-6 py-3 rounded-full shadow-softer hover:shadow-soft transition">
+            Register again
+        </a>
+    </div>
+</div>
+{% endblock %}

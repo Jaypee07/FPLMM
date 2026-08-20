@@ -1,10 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Check your email — FPLMM</title></head>
-<body>
-    <h1>Almost there</h1>
-    <p>We've sent a verification link to your email. Click it to activate your account.</p>
-    <p><strong>Don't see it?</strong> Check your Spam or Junk folder — since FPLMM is a new sender, some email providers may route the first message there until enough people mark it as safe. If you find it there, click "Not spam" or "Report as safe" so future emails land in your inbox directly.</p>
-    <p>(In development, check your terminal — the email prints there instead of sending.)</p>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Check your email — FPLMM{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-soft p-8 text-center">
+        <h1 class="font-display text-3xl font-bold text-ink mb-3">Almost there</h1>
+        <p class="text-ink/70 mb-4">We've sent a verification link to your email. Click it to activate your account.</p>
+
+        <div class="bg-lime-50 rounded-2xl px-4 py-3 text-sm text-ink/80 text-left">
+            <p class="font-semibold text-ink mb-1">Don't see it?</p>
+            <p>Check your Spam or Junk folder — since FPLMM is a new sender, some email providers route the first message there until enough people mark it as safe. Click "Not spam" or "Report as safe" so future emails land in your inbox directly.</p>
+        </div>
+
+        <p class="text-xs text-ink/40 mt-6">(In development, check your terminal — the email prints there instead of sending.)</p>
+    </div>
+</div>
+{% endblock %}

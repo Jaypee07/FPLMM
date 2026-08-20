@@ -1,13 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Join League — FPLMM</title></head>
-<body>
-    <h1>Join a Mini League</h1>
+{% extends "base.html" %}
+{% block title %}Join a League — FPLMM{% endblock %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Join</button>
-    </form>
-</body>
-</html>
+{% block content %}
+<div class="max-w-md mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h1 class="font-display text-3xl font-bold text-ink mb-6">Join a mini league</h1>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+                <div>
+                    <label class="block text-sm font-semibold text-ink mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full bg-ink text-white font-semibold py-3 rounded-full shadow-softer hover:shadow-soft transition mt-2">
+                Join
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

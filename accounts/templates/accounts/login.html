@@ -1,19 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login — FPLMM</title>
-</head>
-<body>
-    <h1>Log in to FPLMM</h1>
+{% extends "base.html" %}
+{% block title %}Log in — FPLMM{% endblock %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Log in</button>
-    </form>
+{% block content %}
+<div class="max-w-md mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h1 class="font-display text-3xl font-bold text-ink mb-1">Welcome back</h1>
+        <p class="text-ink/70 mb-6">Log in to check your leagues.</p>
 
-    <p><a href="{% url 'register' %}">Don't have an account? Register</a></p>
-    <p><a href="{% url 'resend-verification' %}">Didn't get a verification email?</a></p>
-</body>
-</html>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+                <div>
+                    <label class="block text-sm font-semibold text-ink mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <p class="text-sm text-red-500">{{ error }}</p>
+            {% endfor %}
+
+            <button type="submit" class="w-full bg-ink text-white font-semibold py-3 rounded-full shadow-softer hover:shadow-soft transition mt-2">
+                Log in
+            </button>
+        </form>
+
+        <div class="mt-6 pt-6 border-t border-divider text-sm text-ink/70 space-y-2">
+            <p><a href="{% url 'register' %}" class="text-ink font-semibold hover:underline">Don't have an account? Register</a></p>
+            <p><a href="{% url 'resend-verification' %}" class="text-ink font-semibold hover:underline">Didn't get a verification email?</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

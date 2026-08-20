@@ -1,9 +1,24 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from .models import League
 
 
-class LeagueCreateForm(forms.ModelForm):
+INPUT_CLASSES = (
+    "w-full border border-divider rounded-2xl px-4 py-3 text-ink "
+    "focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+)
+
+
+class TailwindStyledFormMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = f"{existing} {INPUT_CLASSES}".strip()
+
+
+class LeagueCreateForm(TailwindStyledFormMixin, forms.ModelForm):
     class Meta:
         model = League
         fields = ["name", "start_gameweek", "total_gameweeks", "include_chip_points"]
@@ -15,15 +30,13 @@ class LeagueCreateForm(forms.ModelForm):
         cleaned_data = super().clean()
         total_gameweeks = cleaned_data.get("total_gameweeks")
 
-        # Force chip points off for short leagues regardless of what was submitted,
-        # since the field is disabled client-side but a raw POST could bypass that.
         if total_gameweeks and total_gameweeks <= 10:
             cleaned_data["include_chip_points"] = False
 
         return cleaned_data
 
 
-class JoinLeagueForm(forms.Form):
+class JoinLeagueForm(TailwindStyledFormMixin, forms.Form):
     code = forms.CharField(
         label="Invite Code",
         max_length=6,

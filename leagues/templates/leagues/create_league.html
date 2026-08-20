@@ -1,44 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Create League — FPLMM</title></head>
-<body>
-    <h1>Create a Mini League</h1>
+{% extends "base.html" %}
+{% block title %}Create a League — FPLMM{% endblock %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create League</button>
-    </form>
+{% block content %}
+<div class="max-w-lg mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h1 class="font-display text-3xl font-bold text-ink mb-6">Create a mini league</h1>
 
-    <script>
-        const totalGwInput = document.getElementById("id_total_gameweeks");
-        const chipCheckbox = document.getElementById("id_include_chip_points");
-        const chipLabel = chipCheckbox.closest("p");
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+                <div>
+                    <label class="block text-sm font-semibold text-ink mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="text-xs text-ink/50 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="text-sm text-red-500 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
 
-        function updateChipFieldState() {
-            const total = parseInt(totalGwInput.value, 10);
-            const eligible = total > 10;
-
-            chipCheckbox.disabled = !eligible;
-            if (!eligible) {
-                chipCheckbox.checked = false;
-            }
-
-            let note = chipLabel.querySelector(".chip-note");
-            if (!note) {
-                note = document.createElement("span");
-                note.className = "chip-note";
-                note.style.color = "#888";
-                note.style.fontSize = "0.85em";
-                chipLabel.appendChild(note);
-            }
-            note.textContent = eligible
-                ? ""
-                : " (only available for leagues longer than 10 gameweeks)";
-        }
-
-        totalGwInput.addEventListener("input", updateChipFieldState);
-        updateChipFieldState(); // run on load too
-    </script>
-</body>
-</html>
+            <button type="submit" class="w-full bg-ink text-white font-semibold py-3 rounded-full shadow-softer hover:shadow-soft transition mt-2">
+                Create league
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

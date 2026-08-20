@@ -1,5 +1,4 @@
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.forms import AuthenticationForm
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -46,6 +45,8 @@ class RegisterView(CreateView):
     def form_valid(self, form):
         user = form.save(commit=False)
         user.is_active = False
+        user.fpl_manager_name = form.fpl_manager_name
+        user.fpl_team_name = form.fpl_team_name
         user.save()
 
         _send_verification_email(self.request, user)
@@ -62,7 +63,6 @@ class VerifyEmailView(View):
             return redirect("registration-invalid")
 
         if user.is_active:
-            # Already verified — link was clicked twice, or reused. Not an error.
             return redirect("login")
 
         if email_verification_token.check_token(user, token):
@@ -115,6 +115,16 @@ class FPLMMLoginView(auth_views.LoginView):
     generic 'invalid credentials' message which hides the real cause.
     """
     template_name = "accounts/login.html"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        for field in form.fields.values():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = (
+                f"{existing} w-full border border-divider rounded-2xl px-4 py-3 text-ink "
+                "focus:outline-none focus:ring-2 focus:ring-lime-400 transition"
+            ).strip()
+        return form
 
     def form_invalid(self, form):
         username = form.data.get("username")
