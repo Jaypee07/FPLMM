@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ member.user.fpl_manager_name|default:member.user.username }} — {{ league.name }}{% endblock %}
+
+{% block content %}
+<div class="mt-8 space-y-6">
+
+    <a href="{% url 'league-detail' league.pk %}" class="text-ink/70 font-semibold hover:underline text-sm">← Back to {{ league.name }}</a>
+
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h1 class="font-display text-3xl font-bold text-ink">
+            {{ member.user.fpl_manager_name|default:member.user.username }}
+        </h1>
+        <p class="text-ink/60 mt-1">{{ member.user.fpl_team_name|default:"—" }} · {{ league.name }}</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <h2 class="font-display text-2xl font-bold text-ink mb-4">Gameweek history</h2>
+
+        {% if history %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-divider text-sm text-ink/60">
+                            <th class="py-2 pr-4">GW</th>
+                            <th class="py-2 pr-4">Points</th>
+                            <th class="py-2 pr-4">Chip</th>
+                            <th class="py-2 pr-4">Cumulative</th>
+                            <th class="py-2">Rank</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in history %}
+                            <tr class="border-b border-divider last:border-0">
+                                <td class="py-3 pr-4 font-semibold text-ink">GW{{ row.gameweek }}</td>
+                                <td class="py-3 pr-4 text-ink">{{ row.adjusted_points }}{% if row.adjusted_points != row.raw_points %}<span class="text-ink/40 text-sm"> ({{ row.raw_points }} raw)</span>{% endif %}</td>
+                                <td class="py-3 pr-4">
+                                    {% if row.chip_used %}
+                                        <span class="text-xs font-semibold bg-lime-50 text-ink px-3 py-1 rounded-full">{{ row.chip_used }}</span>
+                                    {% else %}
+                                        <span class="text-ink/30">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 pr-4 font-semibold text-ink">{{ row.cumulative_points|default:"—" }}</td>
+                                <td class="py-3">
+                                    {% if row.rank %}
+                                        <span class="font-display font-bold text-ink">#{{ row.rank }}</span>
+                                    {% else %}
+                                        <span class="text-ink/30">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-ink/60">No gameweeks have been processed for this member yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

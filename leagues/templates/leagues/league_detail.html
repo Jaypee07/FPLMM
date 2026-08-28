@@ -22,44 +22,50 @@
     </div>
 
     <div class="bg-white rounded-3xl shadow-soft p-8">
-        <h2 class="font-display text-2xl font-bold text-ink mb-4">Leaderboard</h2>
+        <h2 class="font-display text-2xl font-bold text-ink mb-4">
+            {% if leaderboard %}Leaderboard{% else %}Members ({{ members|length }}){% endif %}
+        </h2>
 
         {% if leaderboard %}
             <p class="text-sm text-ink/60 mb-4">As of Gameweek {{ leaderboard_gameweek }}</p>
             <div class="space-y-3">
                 {% for standing in leaderboard %}
-                    <div class="flex items-center justify-between rounded-2xl border border-divider px-5 py-4">
+                    <a href="{% url 'member-performance' league.pk standing.league_member.pk %}" class="flex items-center justify-between rounded-2xl border border-divider px-5 py-4 hover:bg-lime-50 transition block">
                         <div class="flex items-center gap-4">
                             <span class="font-display font-bold text-sm rounded-full w-10 h-10 flex items-center justify-center
                                 {% if standing.rank == 1 %}bg-ink text-white{% else %}bg-lime-50 text-ink{% endif %}">
                                 #{{ standing.rank }}
                             </span>
                             <div>
-                                <p class="font-semibold text-ink">{{ standing.league_member.user.fpl_manager_name|default:standing.league_member.user.username }}</p>
+                                <p class="font-semibold text-ink">
+                                    {{ standing.league_member.user.fpl_manager_name|default:standing.league_member.user.username }}
+                                    {% if standing.league_member.user_id == league.owner_id %}
+                                        <span class="text-xs font-semibold bg-lime-50 text-ink px-2 py-0.5 rounded-full ml-1">Owner</span>
+                                    {% endif %}
+                                </p>
                                 <p class="text-sm text-ink/50">{{ standing.league_member.user.fpl_team_name|default:"—" }}</p>
                             </div>
                         </div>
                         <span class="font-display font-bold text-lg text-ink">{{ standing.total_points }} pts</span>
-                    </div>
+                    </a>
                 {% endfor %}
             </div>
         {% else %}
-            <p class="text-ink/60">No gameweeks have been processed for this league yet. Check back once the admin processes the current gameweek.</p>
+            <p class="text-sm text-ink/60 mb-4">No gameweeks have been processed yet — showing members instead.</p>
+            <div class="space-y-3">
+                {% for member in members %}
+                    <a href="{% url 'member-performance' league.pk member.pk %}" class="flex items-center justify-between rounded-2xl border border-divider px-5 py-4 hover:bg-lime-50 transition block">
+                        <p class="font-semibold text-ink">
+                            {{ member.user.fpl_manager_name|default:member.user.username }}
+                            {% if member.user_id == league.owner_id %}
+                                <span class="text-xs font-semibold bg-lime-50 text-ink px-2 py-0.5 rounded-full ml-1">Owner</span>
+                            {% endif %}
+                        </p>
+                        <span class="text-ink/40 text-sm">View history →</span>
+                    </a>
+                {% endfor %}
+            </div>
         {% endif %}
-    </div>
-
-    <div class="bg-white rounded-3xl shadow-soft p-8">
-        <h2 class="font-display text-2xl font-bold text-ink mb-4">Members ({{ members|length }})</h2>
-        <ul class="space-y-2">
-            {% for member in members %}
-                <li class="flex items-center justify-between py-2 border-b border-divider last:border-0">
-                    <span class="text-ink font-medium">{{ member.user.fpl_manager_name|default:member.user.username }}</span>
-                    {% if member.user_id == league.owner_id %}
-                        <span class="text-xs font-semibold bg-lime-50 text-ink px-3 py-1 rounded-full">Owner</span>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
     </div>
 
 </div>
