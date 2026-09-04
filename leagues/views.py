@@ -132,6 +132,7 @@ class MemberPerformanceView(LoginRequiredMixin, LeagueMembershipRequiredMixin, D
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         member = self.object
+        league = member.league
 
         weekly_scores = WeeklyScore.objects.filter(
             league_member=member
@@ -150,10 +151,11 @@ class MemberPerformanceView(LoginRequiredMixin, LeagueMembershipRequiredMixin, D
                 "raw_points": ws.raw_points,
                 "chip_used": ws.chip_used,
                 "adjusted_points": ws.adjusted_points,
+                "points_used": ws.score_for_standing,
                 "cumulative_points": standing.total_points if standing else None,
                 "rank": standing.rank if standing else None,
             })
 
         context["history"] = history
-        context["league"] = member.league
+        context["league"] = league
         return context

@@ -32,7 +32,14 @@
                         {% for row in history %}
                             <tr class="border-b border-divider last:border-0">
                                 <td class="py-3 pr-4 font-semibold text-ink">GW{{ row.gameweek }}</td>
-                                <td class="py-3 pr-4 text-ink">{{ row.adjusted_points }}{% if row.adjusted_points != row.raw_points %}<span class="text-ink/40 text-sm"> ({{ row.raw_points }} raw)</span>{% endif %}</td>
+                                <td class="py-3 pr-4 text-ink">
+                                    {{ row.points_used }}
+                                    {% if row.raw_points != row.adjusted_points %}
+                                        <span class="text-ink/40 text-sm">
+                                            ({% if row.points_used == row.raw_points %}{{ row.adjusted_points }} without chip{% else %}{{ row.raw_points }} raw{% endif %})
+                                        </span>
+                                    {% endif %}
+                                </td>
                                 <td class="py-3 pr-4">
                                     {% if row.chip_used %}
                                         <span class="text-xs font-semibold bg-lime-50 text-ink px-3 py-1 rounded-full">{{ row.chip_used }}</span>
