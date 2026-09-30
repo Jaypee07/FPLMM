@@ -1,48 +1,45 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-# from django.contrib import admin
-# from django.contrib.auth.decorators import login_required
-# from django.shortcuts import redirect
-# from django.urls import path, include
-
-
-# def root_redirect(request):
-#     if request.user.is_authenticated:
-#         return redirect("dashboard")
-#     return redirect("login")
-
-
-# urlpatterns = [
-#     path("admin/", admin.site.urls),
-#     path("", root_redirect, name="home"),
-#     path("accounts/", include("accounts.urls")),
-#     path("leagues/", include("leagues.urls")),
-#     path("dashboard/", include("dashboard.urls")),
-# ]
-
 from django.contrib import admin
-from django.shortcuts import redirect, render
+from django.core.cache import cache
+from django.shortcuts import render
 from django.urls import path, include
+
+from fpl.services import fetch_bootstrap_teams, fetch_fixtures
+
+
+def _get_home_teaser():
+    cached = cache.get("home_teaser_data")
+    if cached:
+        return cached
+
+    teams = fetch_bootstrap_teams()
+    fixtures = fetch_fixtures()
+
+    def label(fixture):
+        home_team = teams.get(fixture["team_h"], {"name": "TBD", "badge_url": ""})
+        away_team = teams.get(fixture["team_a"], {"name": "TBD", "badge_url": ""})
+        return {
+            "home": home_team["name"],
+            "home_badge": home_team["badge_url"],
+            "away": away_team["name"],
+            "away_badge": away_team["badge_url"],
+            "home_score": fixture.get("team_h_score"),
+            "away_score": fixture.get("team_a_score"),
+            "kickoff": fixture.get("kickoff_time"),
+            "finished": fixture.get("finished"),
+        }
+
+    labeled = [label(f) for f in fixtures]
+    finished = sorted([f for f in labeled if f["finished"]], key=lambda f: f["kickoff"], reverse=True)[:3]
+    upcoming = sorted([f for f in labeled if not f["finished"] and f["kickoff"]], key=lambda f: f["kickoff"])[:3]
+
+    data = {"recent_results": finished, "next_fixtures": upcoming}
+    cache.set("home_teaser_data", data, timeout=300)
+    return data
 
 
 def root_view(request):
-    if request.user.is_authenticated:
-        return redirect("dashboard")
-    return render(request, "home.html")
+    context = _get_home_teaser()
+    return render(request, "home.html", context)
 
 
 urlpatterns = [
@@ -51,4 +48,5 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("leagues/", include("leagues.urls")),
     path("dashboard/", include("dashboard.urls")),
+    path("", include("fpl.urls")),
 ]

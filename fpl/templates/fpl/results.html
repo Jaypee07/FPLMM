@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Results — FPLMM{% endblock %}
+
+{% block content %}
+<div class="mt-8 max-w-3xl mx-auto space-y-6">
+    <h1 class="font-display text-3xl font-bold text-ink mb-2">Results</h1>
+
+    {% if grouped_results %}
+        {% for gameweek, matches in grouped_results %}
+            <div class="bg-white rounded-3xl shadow-soft p-6">
+                <h2 class="font-display text-lg font-bold text-ink mb-4">
+                    {% if gameweek %}Gameweek {{ gameweek }}{% else %}Unknown Gameweek{% endif %}
+                </h2>
+                <div class="space-y-3">
+                    {% for match in matches %}
+                        <div class="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center gap-3 text-sm border-b border-divider pb-3 last:border-0 last:pb-0">
+                            <span class="text-ink font-medium text-right">{{ match.home }}</span>
+                            <img src="{{ match.home_badge }}" alt="" class="h-6 w-6 object-contain">
+                            <span class="font-display font-bold text-ink px-1">{{ match.home_score }}-{{ match.away_score }}</span>
+                            <img src="{{ match.away_badge }}" alt="" class="h-6 w-6 object-contain">
+                            <span class="text-ink font-medium text-left">{{ match.away }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="bg-white rounded-3xl shadow-soft p-6">
+            <p class="text-ink/50">No results yet this season.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

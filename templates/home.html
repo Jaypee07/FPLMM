@@ -23,4 +23,53 @@
         </a>
     </div>
 </div>
+<div class="mt-16 max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display text-2xl font-bold text-ink">Premier League</h2>
+        <div class="flex gap-3 text-sm font-semibold">
+            <a href="{% url 'fixtures' %}" class="text-ink hover:underline">All fixtures →</a>
+            <a href="{% url 'results' %}" class="text-ink hover:underline">All results →</a>
+        </div>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2">
+        <div class="bg-white rounded-3xl shadow-soft p-6">
+            <h3 class="font-display text-lg font-bold text-ink mb-4">Recent Results</h3>
+            {% if recent_results %}
+                <div class="space-y-3">
+                    {% for match in recent_results %}
+                        <div class="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center gap-2 text-sm border-b border-divider pb-3 last:border-0 last:pb-0">
+                            <span class="text-ink font-medium text-right truncate">{{ match.home }}</span>
+                            <img src="{{ match.home_badge }}" alt="" class="h-5 w-5 object-contain">
+                            <span class="font-display font-bold text-ink px-1">{{ match.home_score }}-{{ match.away_score }}</span>
+                            <img src="{{ match.away_badge }}" alt="" class="h-5 w-5 object-contain">
+                            <span class="text-ink font-medium text-left truncate">{{ match.away }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-ink/50 text-sm">No results yet this season.</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-soft p-6">
+            <h3 class="font-display text-lg font-bold text-ink mb-4">Upcoming Fixtures</h3>
+            {% if next_fixtures %}
+                <div class="space-y-3">
+                    {% for match in next_fixtures %}
+                        <div class="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center gap-2 text-sm border-b border-divider pb-3 last:border-0 last:pb-0">
+                            <span class="text-ink font-medium text-right truncate">{{ match.home }}</span>
+                            <img src="{{ match.home_badge }}" alt="" class="h-5 w-5 object-contain">
+                            <span class="text-ink/40 px-1">vs</span>
+                            <img src="{{ match.away_badge }}" alt="" class="h-5 w-5 object-contain">
+                            <span class="text-ink font-medium text-left truncate">{{ match.away }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-ink/50 text-sm">No upcoming fixtures scheduled yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

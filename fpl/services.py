@@ -2,6 +2,9 @@ import requests
 
 
 def fetch_fpl_entry(team_id):
+    """
+    Checks whether a Team ID resolves to a real manager. Used at registration.
+    """
     url = f"https://fantasy.premierleague.com/api/entry/{team_id}/"
     try:
         response = requests.get(url, timeout=5)
@@ -72,6 +75,42 @@ def compute_scores_from_picks(picks_data, live_points):
         captain_pick = next((p for p in picks if p.get("is_captain")), None)
         if captain_pick:
             captain_points = live_points.get(captain_pick["element"], 0)
-            adjusted_points = raw_points - captain_points  # remove the extra 1x
+            adjusted_points = raw_points - captain_points
 
     return raw_points, chip_used, adjusted_points
+
+
+def fetch_bootstrap_teams():
+    """
+    Returns {team_id: {"name": ..., "badge_url": ...}} for all 20 PL teams.
+    """
+    url = "https://fantasy.premierleague.com/api/bootstrap-static/"
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                team["id"]: {
+                    "name": team["name"],
+                    "badge_url": f"https://resources.premierleague.com/premierleague/badges/70/t{team['code']}.png",
+                }
+                for team in data.get("teams", [])
+            }
+    except requests.RequestException:
+        pass
+    return {}
+
+
+def fetch_fixtures():
+    """
+    Returns the raw fixtures list from the FPL API — each fixture has
+    team_h, team_a, team_h_score, team_a_score, kickoff_time, finished.
+    """
+    url = "https://fantasy.premierleague.com/api/fixtures/"
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            return response.json()
+    except requests.RequestException:
+        pass
+    return []
